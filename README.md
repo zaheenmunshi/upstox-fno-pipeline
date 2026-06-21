@@ -24,7 +24,9 @@ Live-Data/
 ## 1. One-time setup (already done)
 - **Python 3.14** installed; project virtualenv in `.venv/` (run Python as `.\.venv\Scripts\python.exe`).
 - Dependencies installed (`upstox-python-sdk`, `websockets`, `protobuf`, `python-dotenv`).
-- `.env` holds your `UPSTOX_API_KEY` / `UPSTOX_API_SECRET` / `UPSTOX_REDIRECT_URI` (gitignored).
+- **Credentials:** copy `.env.example` → `.env` and fill in your `UPSTOX_API_KEY` /
+  `UPSTOX_API_SECRET` / `UPSTOX_REDIRECT_URI` (get them at
+  https://account.upstox.com/developer/apps). The real `.env` is gitignored — never commit it.
 - PowerShell execution policy set so the venv activates.
 
 **Prerequisite on Upstox's side:** your account must have **active trading segments**.
