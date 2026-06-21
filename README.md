@@ -7,6 +7,28 @@ A personal pipeline that fetches **live Indian market data** from Upstox, analys
 A new Claude Code chat opened in this folder already knows the whole setup (via
 `CLAUDE.md`, the agents, and memory) — you never need to re-explain it.
 
+## Quick start (first-time clone)
+```bash
+git clone https://github.com/zaheenmunshi/upstox-fno-pipeline.git
+cd upstox-fno-pipeline
+
+# 1. Create a virtualenv and install dependencies
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1          # Windows PowerShell
+pip install -r requirements.txt
+
+# 2. Add your Upstox credentials
+cp .env.example .env                  # then edit .env and fill in the 3 values
+#   get them at https://account.upstox.com/developer/apps
+
+# 3. (optional) copy the positions template if you'll monitor trades
+cp config/positions.example.json config/positions.json
+```
+Then run the daily flow (§2): get a token → pull a snapshot → ask for a trade.
+**Prerequisite:** your Upstox account must have **active trading segments** (see §1).
+
+> ⚠️ Risk-managed decision-support, **not** financial advice or guaranteed profit. ~9/10 retail F&O traders lose money. You make every decision and trade at your own risk.
+
 ## Project structure
 ```
 Live-Data/
@@ -168,3 +190,9 @@ F&O is leveraged and high-risk. This app is **risk-managed decision-support, not
 advice and not guaranteed profit**. Consider **paper-trading first** (log trades with
 `src/journal.py`) to prove positive expectancy after costs before risking real capital.
 You make every final decision and trade at your own risk.
+
+---
+
+## License
+[MIT](LICENSE) © 2026 Zaheen Munshi. Provided "as is", without warranty of any kind —
+see the LICENSE file. Nothing here is financial advice.
