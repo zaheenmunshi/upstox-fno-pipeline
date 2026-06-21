@@ -1,0 +1,14 @@
+[
+  {
+    "label": "NIFTY 24500 CE",
+    "instrument_key": "NSE_FO|<numeric_token_or_key>",
+    "side": "LONG",
+    "entry": 120.0,
+    "stop": 95.0,
+    "target": 175.0,
+    "qty": 75,
+    "time_stop": "15:00",
+    "opened_at": "2026-06-15T09:50:00+05:30",
+    "notes": "debit-spread long leg; exit other leg together"
+  }
+]

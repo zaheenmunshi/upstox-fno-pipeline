@@ -1,0 +1,22 @@
+# Secrets / credentials
+.env
+.access_token
+
+# Virtual environments
+venv/
+.venv/
+
+# Market data output
+data/
+
+# Personal trading data
+positions.json
+trade_journal.csv
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Agent / analysis scratch space (throwaway scripts — never source)
+scratch/
+/analyze_*.py
