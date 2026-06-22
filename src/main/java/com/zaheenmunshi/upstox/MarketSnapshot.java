@@ -61,11 +61,7 @@ public final class MarketSnapshot {
         Config cfg = Config.load();
         ApiClient client = UpstoxClients.authenticated(cfg.loadToken());
 
-        Map<String, Object> snap = new LinkedHashMap<>();
-        snap.put("_generated_at", Instant.now().toString());
-        snap.put("underlyings", UNDERLYINGS);
-        snap.put("sections", sections);
-        snap.put("errors", errors);
+        String generatedAt = Instant.now().toString();
 
         System.out.println("== Market status ==");
         MarketHolidaysAndTimingsApi timings = new MarketHolidaysAndTimingsApi(client);
@@ -109,10 +105,20 @@ public final class MarketSnapshot {
         // News is sourced by the news-scanner agent (web search); the Upstox news
         // API is instrument-scoped, so it is intentionally omitted here.
 
+        // Compact, Java-computed summary so agents read this instead of re-deriving
+        // indicators / option-chain stats from the raw sections (token + stability win).
+        // Emitted near the top of the file; raw sections are left untouched below it.
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("_generated_at", generatedAt);
+        out.put("underlyings", UNDERLYINGS);
+        out.put("digest", SnapshotDigest.build(UNDERLYINGS, sections));
+        out.put("sections", sections);
+        out.put("errors", errors);
+
         Files.createDirectories(cfg.dataDir());
         String ts = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
         var path = cfg.dataDir().resolve("snapshot_" + ts + ".json");
-        Json.MAPPER.writeValue(path.toFile(), snap);
+        Json.MAPPER.writeValue(path.toFile(), out);
 
         System.out.println("\nSaved snapshot -> " + path);
         System.out.println("Sections OK:    " + sections.keySet());

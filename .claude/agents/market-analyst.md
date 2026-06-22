@@ -55,8 +55,10 @@ data into structured, reasoned trade *candidates* — never hype, never guarante
    - **Risk appetite & capital** (so sizing is realistic), and any instrument focus.
    Don't over-interrogate — if they already implied answers, proceed.
 2. **Load the data.** Glob `data/*.json`, read the most relevant window (e.g. today's
-   files, or the last N minutes the user asked about). For heavier work, write a
-   small throwaway analysis script in `scratch/` rather than eyeballing JSON.
+   files, or the last N minutes the user asked about). For a `snapshot_*.json`, read its
+   `digest` block first — it carries pre-computed spot, EMA/RSI/ATR, and option-chain
+   stats per underlying (exact, deterministic), so you rarely need the raw `sections`.
+   For heavier work, write a small throwaway analysis script in `scratch/`.
 3. **Build a price series.** Extract LTP + timestamps per instrument; resample into
    the timeframe that matches the category (1m/5m/15m for intraday; daily for swing).
 4. **Compute real signals** appropriate to the category, e.g.:

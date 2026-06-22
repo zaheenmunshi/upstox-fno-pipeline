@@ -27,9 +27,13 @@ agent independently reviews your card and can VETO it.
 ## FRESHNESS MANDATE (the user requires this — never analyse stale data)
 1. **Live data + chart:** use the newest `data/snapshot_*.json` / `data/market_data_*.json`.
    If missing or older than ~5 min during market hours, REFRESH first
-   (`java -jar target/upstox-fno-pipeline.jar snapshot`; `... stream` for ticks). Inspect the JSON structure
-   before parsing (sections: `market_status_*`, `intraday_*`, `historical_*`,
-   `option_chain_*`, `expiries_*`, `news`).
+   (`java -jar target/upstox-fno-pipeline.jar snapshot`; `... stream` for ticks).
+   **READ THE `digest` SECTION FIRST** — it is a compact, Java-computed summary per
+   underlying (spot, intraday/daily EMA·RSI·ATR, ATM strike, PCR, max-pain, call/put
+   walls, ATM IV + skew, and the ATM±7 strike table with OI/ΔOI/LTP/IV/delta). These
+   numbers are exact and deterministic; use them rather than re-deriving by hand.
+   Only dig into the raw `sections` (`market_status_*`, `intraday_*`, `historical_*`,
+   `option_chain_*`, `expiries_*`) when you need a specific field the digest omits.
 2. **Latest news bias:** get a same-day briefing from the **news-scanner** agent.
 3. **Historical precedent:** pull historical candles and check "has this setup/event
    happened before, and how did it resolve?" — state it as a rough base rate, not a promise.
@@ -40,8 +44,10 @@ agent independently reviews your card and can VETO it.
 2. **Classify the REGIME first** (ADX, EMA stack, India VIX) — trend / range / chop.
    Chop or "range + only-idea-is-naked-buying" ⇒ likely NO TRADE (TRADING_RULES §C).
 3. **Read volatility:** IV / IV-Rank vs recent range, India VIX, event-driven IV-crush risk (§D).
-4. **Option-chain structure:** ΔOI+Δprice+Δvolume together, PCR, max-pain, IV skew,
-   liquidity (bid-ask, volume/OI), greeks (delta=direction, theta=decay, vega=IV risk).
+4. **Option-chain structure:** read the digest's `options` block (PCR, max-pain, call/put
+   walls, ATM IV + skew, ATM±7 table with ΔOI). Combine ΔOI+Δprice together; check
+   liquidity (bid-ask, volume/OI — from raw `option_chain_*` if needed), greeks
+   (delta=direction, theta=decay, vega=IV risk).
 5. **Pick the structure from `docs/STRATEGIES.md`** (the full playbook: directional long/debit/credit
    spreads, straddle/strangle, iron condor/fly, calendar for IV-crush, expiry/0DTE cautions)
    guided by the §E matrix (direction × IV). Prefer defined-risk; avoid far-OTM lottery buys.

@@ -34,7 +34,7 @@ Each maps to a class in `src/main/java/com/zaheenmunshi/upstox/`:
 - `pipeline ["<redirect-url>"]` (`RunPipeline`) — one-command DATA stage: token (optional) → snapshot → readiness report. Entry point for the orchestrated pipeline (see `docs/PIPELINE.md`).
 - `auth` (`Auth`) — interactive daily Upstox OAuth2 login; saves `.access_token`.
 - `get-token "<code-or-redirect-url>"` (`GetToken`) — non-interactive token exchange (paste-the-URL flow).
-- `snapshot` (`MarketSnapshot`) — fresh REST snapshot → `data/snapshot_*.json`: market status, intraday (5m) + daily candles, nearest-expiry option chain (OI/IV/greeks).
+- `snapshot` (`MarketSnapshot`) — fresh REST snapshot → `data/snapshot_*.json`: market status, intraday (5m) + daily candles, nearest-expiry option chain (OI/IV/greeks). Also writes a top-level **`digest`** (computed by `SnapshotDigest`): a compact per-underlying summary — spot, intraday/daily EMA·RSI·ATR, ATM strike, PCR, max-pain, call/put walls, ATM IV + skew, and an ATM±7 strike table (OI/ΔOI/LTP/IV/delta). Agents read `digest` first (exact, deterministic, ~5K tokens) and only fall back to the raw `sections` for fields it omits — this is the token/stability optimisation, NOT a behaviour change.
 - `stream` (`Streamer`) — WebSocket V3 tick stream → `data/market_data_*.json` every 5s.
 - `backtest [--flags]` (`Backtest`) — validate a directional setup on historical candles (win-rate/expectancy/PF/drawdown). Underlying-signal only, not option P&L.
 - `monitor` (`MonitorPositions`) — watch open trades in `config/positions.json` vs stop/target/time-stop via live LTP (alert-only).
