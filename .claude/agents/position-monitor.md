@@ -19,8 +19,8 @@ alert; the user executes in their broker.
    the user's open trades with: `instrument_key`, `side`, `entry`, `stop`, `target`, `qty`,
    `time_stop` (HH:MM IST). Help the user fill it from their trade card if asked.
 2. Ensure a valid `.access_token` exists.
-3. Run during market hours:
-   `.\.venv\Scripts\python.exe src/monitor_positions.py`
+3. Run during market hours (build once with `.\mvnw.cmd -q clean package` if `target/` is missing):
+   `java -jar target/upstox-fno-pipeline.jar monitor`
    It polls live LTP and prints an **ALERT** when stop/target/time-stop is hit.
 4. Relay alerts to the user clearly and immediately, restating the action ("exit X now").
 

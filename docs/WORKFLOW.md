@@ -18,12 +18,12 @@ flowchart TD
     end
 
     %% ===== 2. DATA LAYER =====
-    subgraph DATA["📡 2. Data Layer — scripts (src/)"]
-        RP["run_pipeline.py<br/>(one-command driver)"]
-        GT["get_token.py / auth.py"]
+    subgraph DATA["📡 2. Data Layer — Java tools (jar subcommands)"]
+        RP["pipeline<br/>(one-command driver)"]
+        GT["get-token / auth"]
         TOK[".access_token"]
-        MS["market_snapshot.py<br/>REST: status · candles ·<br/>option chain OI/IV/greeks · news"]
-        ST["streamer.py<br/>WebSocket V3 live ticks"]
+        MS["snapshot<br/>REST: status · candles ·<br/>option chain OI/IV/greeks"]
+        ST["stream<br/>WebSocket V3 live ticks"]
         DDIR[("data/<br/>snapshot_*.json<br/>market_data_*.json")]
     end
 
@@ -100,11 +100,11 @@ flowchart TD
                      │  paste redirect ?code=...
                      ▼
         ┌─────────────────────────────────────────┐
-        │  DATA LAYER (scripts)                     │
-        │  run_pipeline.py                          │
-        │     └─ get_token.py ─► .access_token      │
-        │     └─ market_snapshot.py ─┐              │
-        │        streamer.py ────────┴─► data/*.json│
+        │  DATA LAYER (Java jar subcommands)        │
+        │  pipeline                                 │
+        │     └─ get-token ─► .access_token         │
+        │     └─ snapshot ───┐                       │
+        │        stream ─────┴─► data/*.json         │
         └───────────────────────┬───────────────────┘
                                 │  fresh data ready
                 ┌───────────────┴───────────────┐
@@ -135,7 +135,7 @@ flowchart TD
 
 ## Legend
 - 🟨 **Human step** (only you can do): browser login, and placing the actual order.
-- 🟦 **Script** (deterministic, in `src/`).
+- 🟦 **Java tool** (deterministic; a subcommand of the built jar).
 - 🟩 **Agent** (Claude-orchestrated reasoning).
 - 🟪 **Data store** (`data/`, gitignored).
 - 🟥 **Rulebook** (`docs/`) that governs the trade agents.

@@ -2,10 +2,6 @@
 .env
 .access_token
 
-# Virtual environments
-venv/
-.venv/
-
 # Market data output
 data/
 
@@ -13,10 +9,25 @@ data/
 positions.json
 trade_journal.csv
 
-# Python cache
+# Java compiled bytecode (safety net — target/ covers Maven output)
+*.class
+
+# Python bytecode (safety net — in case scratch/ scripts are ever run)
 __pycache__/
 *.pyc
 
+# Java / Maven build output (the Maven Wrapper mvnw/.mvn IS committed)
+target/
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE-specific files
+.vscode/
+.idea/
+*.iml
+
 # Agent / analysis scratch space (throwaway scripts — never source)
 scratch/
-/analyze_*.py
+
+# Claude Code local settings (personal permission allowlists + transient auth-code grants)
+.claude/settings.json
+.claude/settings.local.json

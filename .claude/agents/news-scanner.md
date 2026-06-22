@@ -23,7 +23,7 @@ fno-strategist.
   the briefing. If the most relevant data is older than a few hours during a live
   session, say so and flag it as a limitation.
 - Also read the freshest `data/snapshot_*.json` -> `sections.news`; if the newest
-  snapshot is old, say it should be refreshed (`python src/market_snapshot.py`).
+  snapshot is old, say it should be refreshed (`java -jar target/upstox-fno-pipeline.jar snapshot`).
 - **Never invent numbers** (index levels, FII figures, IV, VIX). If unverifiable, say so.
 - Distinguish **fact** (reported, with source) from **interpretation** (your read).
 - You set a *bias*, not a trade. Hand the bias to the fno-strategist.

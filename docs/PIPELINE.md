@@ -1,7 +1,7 @@
 # PIPELINE.md — Orchestrated Daily Trade Pipeline
 
-One trigger runs the whole chain. The deterministic **data stage** is a script
-(`src/run_pipeline.py`); the **AI stages** are specialist agents orchestrated by Claude
+One trigger runs the whole chain. The deterministic **data stage** is the `pipeline`
+command (`java -jar target/upstox-fno-pipeline.jar pipeline`); the **AI stages** are specialist agents orchestrated by Claude
 at the top level (sub-agents can't spawn sub-agents, so the main session coordinates them
 and runs the independent stages in parallel).
 
@@ -21,8 +21,8 @@ The user pastes the login URL (and/or says "run the pipeline" / "give me today's
 ## Stage graph
 ```
             ┌─────────────────────────────────────────────┐
- STAGE 0/1  │ src/run_pipeline.py  ["<redirect-url>"]      │  (script, deterministic)
- DATA       │  token -> market_snapshot -> readiness report│
+ STAGE 0/1  │ pipeline  ["<redirect-url>"]                 │  (jar subcommand, deterministic)
+ DATA       │  token -> snapshot -> readiness report        │
             └───────────────────────┬─────────────────────┘
                                     │ data/snapshot_*.json ready
                     ┌───────────────┴───────────────┐
@@ -51,7 +51,7 @@ The user pastes the login URL (and/or says "run the pipeline" / "give me today's
 ## Stage details (inputs -> outputs)
 | Stage | Runs | Needs | Produces |
 |---|---|---|---|
-| 0/1 Data | `src/run_pipeline.py` | token (or pasted URL) | fresh `data/snapshot_*.json` + readiness report |
+| 0/1 Data | `pipeline` command | token (or pasted URL) | fresh `data/snapshot_*.json` + readiness report |
 | A Context | `news-scanner` ∥ `backtester` | snapshot + web | bias + key levels; historical edge verdict |
 | B Build | `fno-strategist` | snapshot, bias, backtest | scored trade card (entry/SL/targets/sizing) |
 | C Gate | `risk-manager` | the trade card | APPROVE / CHANGES / VETO |
@@ -59,7 +59,7 @@ The user pastes the login URL (and/or says "run the pipeline" / "give me today's
 
 ## Orchestration rules (for the main session) — run autonomously, surface only the end
 1. **Ask intent ONCE** (after the token is obtained), then proceed without further questions.
-2. **Run Stage 0/1.** If `run_pipeline.py` fails (no token / segment / snapshot error), STOP and
+2. **Run Stage 0/1.** If the `pipeline` command fails (no token / segment / snapshot error), STOP and
    tell the user (this is an allowed interrupt) — never analyse on missing data (freshness mandate).
 3. **Launch Stage A agents in ONE message** (parallel) — `news-scanner` and `backtester`.
 4. **Feed both into `fno-strategist`** (Stage B). "No clean setup" → present stay-flat; never force a trade.
@@ -72,5 +72,5 @@ The user pastes the login URL (and/or says "run the pipeline" / "give me today's
 8. Interrupt the user ONLY on error/breakage or genuinely ambiguous intent.
 
 ## Notes
-- Stages A→C need a valid token + active Upstox segments (live as of 2026-06-16).
+- Stages A→C need a valid token + active Upstox segments (Java port live as of 2026-06-21).
 - `backtester` (Stage A) is optional for speed but recommended before trusting a new setup.

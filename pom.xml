@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.zaheenmunshi</groupId>
+  <artifactId>upstox-fno-pipeline</artifactId>
+  <version>0.1.0</version>
+  <packaging>jar</packaging>
+
+  <name>Upstox F&amp;O Live-Data Pipeline (Java)</name>
+  <description>Java port of the Upstox V3 live-data + F&amp;O analysis pipeline. Suggestion-only decision support.</description>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <jackson.version>2.17.2</jackson.version>
+    <upstox.sdk.version>1.26</upstox.sdk.version>
+    <main.class>com.zaheenmunshi.upstox.Main</main.class>
+  </properties>
+
+  <dependencies>
+    <!-- Official Upstox Java SDK: REST APIs (login/history/options/quote/timings)
+         + the V3 market-data WebSocket streamer (MarketDataStreamerV3), which
+         decodes the protobuf feed for us. Mirrors the Python upstox-python-sdk. -->
+    <dependency>
+      <groupId>com.upstox.api</groupId>
+      <artifactId>upstox-java-sdk</artifactId>
+      <version>${upstox.sdk.version}</version>
+    </dependency>
+
+    <!-- JSON (REST responses + snapshot / market-data output files) -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>upstox-fno-pipeline</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+      </plugin>
+
+      <!-- Build a single runnable uber-jar: target/upstox-fno-pipeline.jar
+             java -jar target/upstox-fno-pipeline.jar <subcommand> [args]
+           Subcommands: auth | get-token | snapshot | stream | backtest |
+                        monitor | journal | cleanup | pipeline -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals><goal>shade</goal></goals>
+            <configuration>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>${main.class}</mainClass>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+              </transformers>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                    <exclude>module-info.class</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Run a single tool without building the jar, e.g.:
+             mvn -q compile exec:java -Dexec.args="snapshot"
+             mvn -q compile exec:java -Dexec.args="get-token https://127.0.0.1/?code=XXXX" -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.4.1</version>
+        <configuration>
+          <mainClass>${main.class}</mainClass>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

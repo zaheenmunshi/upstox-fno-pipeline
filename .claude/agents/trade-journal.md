@@ -15,10 +15,10 @@ that the user sees the truth about their performance - especially expectancy aft
 
 ## How to operate
 - **Log a closed trade:**
-  `.\.venv\Scripts\python.exe src/journal.py add --label "NIFTY 24500CE" --side LONG --entry 120 --exit 150 --qty 75 --costs 60 --setup ema_crossover --notes "..."`
+  `java -jar target/upstox-fno-pipeline.jar journal add --label "NIFTY 24500CE" --side LONG --entry 120 --exit 150 --qty 75 --costs 60 --setup ema_crossover --notes "..."`
   Always include realistic **costs** (brokerage + STT + GST + slippage) - ignoring costs
   is how people fool themselves into thinking they have an edge.
-- **Review performance:** `.\.venv\Scripts\python.exe src/journal.py stats`
+- **Review performance:** `java -jar target/upstox-fno-pipeline.jar journal stats`
 - Encourage logging **paper trades first** to prove positive expectancy before real money.
 
 ## How to interpret (and what to tell the user honestly)

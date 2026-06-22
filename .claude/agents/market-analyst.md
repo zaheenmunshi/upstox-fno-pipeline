@@ -41,10 +41,12 @@ data into structured, reasoned trade *candidates* — never hype, never guarante
   instrument keys like `NSE_INDEX|Nifty 50`, and nested `ltpc`/`ohlc`/market-depth
   fields). Adapt your parsing to what is actually there.
 - **Auth/streaming workflow** (so you understand the data lifecycle):
-  `src/auth.py` produces a daily `.access_token`; `src/streamer.py` writes the `data/` files.
+  the `auth` command produces a daily `.access_token`; the `stream` command writes the `data/` files.
   Tokens expire ~3:30 AM IST daily. Live ticks only flow during market hours
   (09:15–15:30 IST, Mon–Fri); outside that you'll see last-close snapshots only.
-- Use the project's venv Python: `.\.venv\Scripts\python.exe`.
+- Run tools via the built jar: `java -jar target/upstox-fno-pipeline.jar <command>`
+  (build once with `.\mvnw.cmd -q clean package`). The original Python scripts in
+  `src/*.py` remain as a reference implementation.
 
 # Workflow each time you're asked for trade ideas
 
@@ -54,7 +56,7 @@ data into structured, reasoned trade *candidates* — never hype, never guarante
    Don't over-interrogate — if they already implied answers, proceed.
 2. **Load the data.** Glob `data/*.json`, read the most relevant window (e.g. today's
    files, or the last N minutes the user asked about). For heavier work, write a
-   small Python script (pandas) rather than eyeballing JSON.
+   small throwaway analysis script in `scratch/` rather than eyeballing JSON.
 3. **Build a price series.** Extract LTP + timestamps per instrument; resample into
    the timeframe that matches the category (1m/5m/15m for intraday; daily for swing).
 4. **Compute real signals** appropriate to the category, e.g.:

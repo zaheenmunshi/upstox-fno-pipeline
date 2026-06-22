@@ -12,10 +12,11 @@ A new Claude Code chat opened in this folder already knows the whole setup (via
 git clone https://github.com/zaheenmunshi/upstox-fno-pipeline.git
 cd upstox-fno-pipeline
 
-# 1. Create a virtualenv and install dependencies
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1          # Windows PowerShell
-pip install -r requirements.txt
+# 1. Install Oracle JDK 21 (one time), then build the app.
+#    Windows: winget install --id Oracle.JDK.21 -e
+#    The build uses the bundled Maven Wrapper — no system Maven needed.
+.\mvnw.cmd clean package              # Windows  (./mvnw clean package on macOS/Linux)
+#    -> produces target/upstox-fno-pipeline.jar
 
 # 2. Add your Upstox credentials
 cp .env.example .env                  # then edit .env and fill in the 3 values
@@ -24,16 +25,19 @@ cp .env.example .env                  # then edit .env and fill in the 3 values
 # 3. (optional) copy the positions template if you'll monitor trades
 cp config/positions.example.json config/positions.json
 ```
+Every tool is a subcommand of the jar: `java -jar target/upstox-fno-pipeline.jar <command>`.
 Then run the daily flow (§2): get a token → pull a snapshot → ask for a trade.
 **Prerequisite:** your Upstox account must have **active trading segments** (see §1).
+
 
 > ⚠️ Risk-managed decision-support, **not** financial advice or guaranteed profit. ~9/10 retail F&O traders lose money. You make every decision and trade at your own risk.
 
 ## Project structure
 ```
 Live-Data/
-├── README.md / CLAUDE.md / requirements.txt / .env / .gitignore   (root)
-├── src/        all Python scripts (run from the project root)
+├── README.md / CLAUDE.md / pom.xml / mvnw(.cmd) / .env / .gitignore   (root)
+├── src/main/java/com/zaheenmunshi/upstox/   the Java tools
+├── target/     build output — upstox-fno-pipeline.jar (gitignored)
 ├── docs/       TRADING_RULES.md, STRATEGIES.md, PIPELINE.md, WORKFLOW.md
 ├── config/     positions.example.json  (copy -> positions.json)
 ├── data/       market data output (gitignored)
@@ -44,13 +48,13 @@ Live-Data/
 ---
 
 ## 1. One-time setup (already done)
-- **Python 3.14** installed; project virtualenv in `.venv/` (run Python as `.\.venv\Scripts\python.exe`).
-- Dependencies installed (`upstox-python-sdk`, `websockets`, `protobuf`, `python-dotenv`).
+- **Oracle JDK 21** installed (`winget install --id Oracle.JDK.21 -e`). Confirm with `java -version`.
+- **Build** with the bundled Maven Wrapper: `.\mvnw.cmd clean package` → `target/upstox-fno-pipeline.jar`.
+  (No system Maven needed; the wrapper fetches Maven on first run. Built on the official
+  `com.upstox.api:upstox-java-sdk`.) Rebuild whenever you change a Java source.
 - **Credentials:** copy `.env.example` → `.env` and fill in your `UPSTOX_API_KEY` /
   `UPSTOX_API_SECRET` / `UPSTOX_REDIRECT_URI` (get them at
   https://account.upstox.com/developer/apps). The real `.env` is gitignored — never commit it.
-- PowerShell execution policy set so the venv activates.
-
 **Prerequisite on Upstox's side:** your account must have **active trading segments**.
 If you ever see error `UDAPI100058`, reactivate them in the Upstox app/web first — nothing
 here works until then. (API key + secret are already confirmed valid.)
@@ -61,24 +65,22 @@ here works until then. (API key + secret are already confirmed valid.)
 
 **1. Open the project & a terminal**
 - VS Code → open folder `Live-Data` → start a new Claude Code chat.
-- Activate the environment:
-  ```powershell
-  .\.venv\Scripts\Activate.ps1
-  ```
+- A fresh terminal already has `java` on PATH (from the JDK install). Build once if
+  `target/` is missing: `.\mvnw.cmd clean package`.
 
 **2. Get today's access token** (tokens expire ~3:30 AM IST daily)
 - Tell Claude *"Give me my Upstox login URL"* → log in → paste back the
   `https://127.0.0.1/?code=...` URL (the "site can't be reached" page is normal — the
-  code is in the address bar). Claude runs `src/get_token.py`.
-- Or do it yourself: `python src/auth.py`.
+  code is in the address bar). Claude runs the `get-token` command.
+- Or do it yourself: `java -jar target/upstox-fno-pipeline.jar auth`.
 
 **3. Pull fresh data** (freshness is mandatory — see §3)
-- `python src/market_snapshot.py` — status, candles, option chain (OI/IV/greeks), news.
-- During market hours, for live ticks: `python src/streamer.py` (leave running).
+- `java -jar target/upstox-fno-pipeline.jar snapshot` — status, candles, option chain (OI/IV/greeks).
+- During market hours, for live ticks: `java -jar target/upstox-fno-pipeline.jar stream` (leave running).
 
 **4. Ask for a trade (orchestrated pipeline)**
 - *"Run the pipeline"* or *"Give me an F&O trade for today — ₹30,000, intraday."*
-- This runs `src/run_pipeline.py` (token → snapshot → readiness), then Claude orchestrates
+- This runs the `pipeline` command (token → snapshot → readiness), then Claude orchestrates
   the agents per `docs/PIPELINE.md`: **news-scanner ∥ backtester → fno-strategist →
   risk-manager** → a checked, gated trade card. "No clean setup → stay flat" is a valid answer.
 
@@ -146,17 +148,19 @@ Idea-generation (`fno-strategist`) is deliberately separated from risk control
 ---
 
 ## 4. Files & agents reference
-| Script (`src/`) | Purpose |
+All commands are subcommands of `java -jar target/upstox-fno-pipeline.jar`:
+
+| Command | Purpose |
 |---|---|
-| `src/run_pipeline.py ["<url>"]` | **One-command pipeline data stage**: token → snapshot → readiness report (see `docs/PIPELINE.md`) |
-| `src/auth.py` | Interactive daily Upstox login |
-| `src/get_token.py "<redirect-url>"` | Non-interactive token exchange (paste-the-URL flow) |
-| `src/market_snapshot.py` | Fetch fresh candles / option chain (OI/IV/greeks) / news / status |
-| `src/streamer.py` | Live WebSocket V3 tick stream → `data/` (market hours) |
-| `src/backtest.py` | Validate a setup's historical edge (win-rate/expectancy/PF/drawdown) |
-| `src/monitor_positions.py` | Watch open trades in `config/positions.json` vs stop/target/time-stop (alert-only) |
-| `src/journal.py add\|stats` | Log trades → `trade_journal.csv`; compute real win-rate/expectancy/costs |
-| `src/cleanup_data.py` | Safe, path-guarded cleanup of `data/` (`--keep-latest`, `--older-than`, `--pycache`, `--dry-run`) |
+| `pipeline ["<url>"]` | **One-command pipeline data stage**: token → snapshot → readiness report (see `docs/PIPELINE.md`) |
+| `auth` | Interactive daily Upstox login |
+| `get-token "<redirect-url>"` | Non-interactive token exchange (paste-the-URL flow) |
+| `snapshot` | Fetch fresh candles / option chain (OI/IV/greeks) / status |
+| `stream` | Live WebSocket V3 tick stream → `data/` (market hours) |
+| `backtest [--flags]` | Validate a setup's historical edge (win-rate/expectancy/PF/drawdown) |
+| `monitor` | Watch open trades in `config/positions.json` vs stop/target/time-stop (alert-only) |
+| `journal add\|stats` | Log trades → `trade_journal.csv`; compute real win-rate/expectancy/costs |
+| `cleanup [--flags]` | Safe, path-guarded cleanup of `data/` (`--keep-latest`, `--older-than`, `--pycache`, `--dry-run`) |
 | `docs/TRADING_RULES.md` | Master rulebook (risk rules, 9-point checklist, regime/IV playbook) |
 | `docs/STRATEGIES.md` | Options strategy playbook (spreads, straddle/strangle, condor, calendar, 0DTE) |
 | `docs/PIPELINE.md` | Orchestrated pipeline stage graph + rules |
@@ -179,16 +183,16 @@ Idea-generation (`fno-strategist`) is deliberately separated from risk control
 - **`UDAPI100058` "no segments active"** → reactivate trading segments in the Upstox app.
 - **"site can't be reached" after login** → normal; copy the URL from the address bar.
 - **Token errors / 401 next day** → the daily token expired (~3:30 AM IST); re-authenticate.
-- **`python` not found in a terminal** → it opened before install or venv isn't active;
-  reopen the terminal and run `.\.venv\Scripts\Activate.ps1`.
-- **Activation blocked** → `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` (already set).
+- **`java` not found in a terminal** → it opened before the JDK install added it to PATH;
+  reopen the terminal (or check `java -version`).
+- **`target/...jar` missing** → build it: `.\mvnw.cmd clean package`.
 
 ---
 
 ## 6. Reality check (read once, then again before risking money)
 F&O is leveraged and high-risk. This app is **risk-managed decision-support, not financial
 advice and not guaranteed profit**. Consider **paper-trading first** (log trades with
-`src/journal.py`) to prove positive expectancy after costs before risking real capital.
+the `journal` command) to prove positive expectancy after costs before risking real capital.
 You make every final decision and trade at your own risk.
 
 ---

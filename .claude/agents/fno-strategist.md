@@ -27,7 +27,7 @@ agent independently reviews your card and can VETO it.
 ## FRESHNESS MANDATE (the user requires this — never analyse stale data)
 1. **Live data + chart:** use the newest `data/snapshot_*.json` / `data/market_data_*.json`.
    If missing or older than ~5 min during market hours, REFRESH first
-   (`python src/market_snapshot.py`; `src/streamer.py` for ticks). Inspect the JSON structure
+   (`java -jar target/upstox-fno-pipeline.jar snapshot`; `... stream` for ticks). Inspect the JSON structure
    before parsing (sections: `market_status_*`, `intraday_*`, `historical_*`,
    `option_chain_*`, `expiries_*`, `news`).
 2. **Latest news bias:** get a same-day briefing from the **news-scanner** agent.
