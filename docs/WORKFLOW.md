@@ -22,7 +22,7 @@ flowchart TD
         RP["pipeline<br/>(one-command driver)"]
         GT["get-token / auth"]
         TOK[".access_token"]
-        MS["snapshot<br/>REST: status · candles ·<br/>option chain OI/IV/greeks"]
+        MS["snapshot<br/>REST: status · candles ·<br/>option chain OI/IV/greeks<br/>+ digest (EMA·RSI·ATR · PCR · max-pain · walls)"]
         ST["stream<br/>WebSocket V3 live ticks"]
         DDIR[("data/<br/>snapshot_*.json<br/>market_data_*.json")]
     end

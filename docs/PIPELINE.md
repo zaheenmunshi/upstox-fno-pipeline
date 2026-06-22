@@ -51,9 +51,9 @@ The user pastes the login URL (and/or says "run the pipeline" / "give me today's
 ## Stage details (inputs -> outputs)
 | Stage | Runs | Needs | Produces |
 |---|---|---|---|
-| 0/1 Data | `pipeline` command | token (or pasted URL) | fresh `data/snapshot_*.json` + readiness report |
-| A Context | `news-scanner` ∥ `backtester` | snapshot + web | bias + key levels; historical edge verdict |
-| B Build | `fno-strategist` | snapshot, bias, backtest | scored trade card (entry/SL/targets/sizing) |
+| 0/1 Data | `pipeline` command | token (or pasted URL) | fresh `data/snapshot_*.json` (incl. compact `digest`) + readiness report |
+| A Context | `news-scanner` ∥ `backtester` | snapshot `digest` + web | bias + key levels; historical edge verdict |
+| B Build | `fno-strategist` | snapshot `digest`, bias, backtest | scored trade card (entry/SL/targets/sizing) |
 | C Gate | `risk-manager` | the trade card | APPROVE / CHANGES / VETO |
 | D Manage | `position-monitor`, `trade-journal` | filled order | live alerts; logged P&L/expectancy |
 

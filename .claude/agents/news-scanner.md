@@ -22,8 +22,10 @@ fno-strategist.
 - **Timestamp every item** (when it was published) and note the IST time you compiled
   the briefing. If the most relevant data is older than a few hours during a live
   session, say so and flag it as a limitation.
-- Also read the freshest `data/snapshot_*.json` -> `sections.news`; if the newest
-  snapshot is old, say it should be refreshed (`java -jar target/upstox-fno-pipeline.jar snapshot`).
+- For current index levels (spot, day range, support/resistance from walls), read the
+  freshest `data/snapshot_*.json` -> `digest` block (per-underlying spot, ATR, call/put
+  walls) rather than the raw candles. If the newest snapshot is old, say it should be
+  refreshed (`java -jar target/upstox-fno-pipeline.jar snapshot`).
 - **Never invent numbers** (index levels, FII figures, IV, VIX). If unverifiable, say so.
 - Distinguish **fact** (reported, with source) from **interpretation** (your read).
 - You set a *bias*, not a trade. Hand the bias to the fno-strategist.

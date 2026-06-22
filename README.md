@@ -75,7 +75,9 @@ here works until then. (API key + secret are already confirmed valid.)
 - Or do it yourself: `java -jar target/upstox-fno-pipeline.jar auth`.
 
 **3. Pull fresh data** (freshness is mandatory — see §3)
-- `java -jar target/upstox-fno-pipeline.jar snapshot` — status, candles, option chain (OI/IV/greeks).
+- `java -jar target/upstox-fno-pipeline.jar snapshot` — status, candles, option chain (OI/IV/greeks),
+  plus a compact `digest` (spot, EMA/RSI/ATR, ATM, PCR, max-pain, call/put walls, IV skew, ATM±7 table)
+  the agents read first instead of re-crunching the raw JSON.
 - During market hours, for live ticks: `java -jar target/upstox-fno-pipeline.jar stream` (leave running).
 
 **4. Ask for a trade (orchestrated pipeline)**
@@ -155,7 +157,7 @@ All commands are subcommands of `java -jar target/upstox-fno-pipeline.jar`:
 | `pipeline ["<url>"]` | **One-command pipeline data stage**: token → snapshot → readiness report (see `docs/PIPELINE.md`) |
 | `auth` | Interactive daily Upstox login |
 | `get-token "<redirect-url>"` | Non-interactive token exchange (paste-the-URL flow) |
-| `snapshot` | Fetch fresh candles / option chain (OI/IV/greeks) / status |
+| `snapshot` | Fetch fresh candles / option chain (OI/IV/greeks) / status + a Java-computed `digest` (EMA·RSI·ATR, PCR, max-pain, walls, IV skew) the agents read first |
 | `stream` | Live WebSocket V3 tick stream → `data/` (market hours) |
 | `backtest [--flags]` | Validate a setup's historical edge (win-rate/expectancy/PF/drawdown) |
 | `monitor` | Watch open trades in `config/positions.json` vs stop/target/time-stop (alert-only) |
