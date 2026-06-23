@@ -104,7 +104,6 @@ public final class MonitorPositions {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private static List<Map<String, Object>> loadPositions(Config cfg) throws Exception {
         var file = cfg.positionsFile();
         if (!Files.exists(file)) {
